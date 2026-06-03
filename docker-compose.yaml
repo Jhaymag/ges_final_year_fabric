@@ -1,0 +1,167 @@
+networks:
+  ges-network:
+
+services:
+  orderer.ges.edu.gh:
+    image: hyperledger/fabric-orderer:2.5
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_LISTENPORT=7050
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/orderer.genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: orderer
+    volumes:
+      - ./channel-artifacts/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
+      - ./crypto-config/ordererOrganizations/ges.edu.gh/orderers/orderer.ges.edu.gh/msp:/var/hyperledger/orderer/msp
+      - ./crypto-config/ordererOrganizations/ges.edu.gh/orderers/orderer.ges.edu.gh/tls:/var/hyperledger/orderer/tls
+      - ./ledger-data/orderer:/var/hyperledger/production/orderer
+    ports:
+      - 7050:7050
+    restart: unless-stopped
+    networks:
+      - ges-network
+
+  peer0.ges.ges.edu.gh:
+    image: hyperledger/fabric-peer:2.5
+    container_name: peer0.ges.ges.edu.gh
+    # host.docker.internal:host-gateway resolves the WSL2 host IP dynamically.
+    # This replaces the hardcoded 172.29.192.1 which changes on every WSL restart.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=ges-network_ges-network
+      - FABRIC_LOGGING_SPEC=INFO
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      - CORE_PEER_ID=peer0.ges.ges.edu.gh
+      - CORE_PEER_ADDRESS=peer0.ges.ges.edu.gh:7051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.ges.ges.edu.gh:7052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.ges.ges.edu.gh:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.ges.ges.edu.gh:7051
+      - CORE_PEER_LOCALMSPID=GESMSP
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    volumes:
+      - /var/run/:/host/var/run/
+      - ./crypto-config/peerOrganizations/ges.ges.edu.gh/peers/peer0.ges.ges.edu.gh/msp:/etc/hyperledger/fabric/msp
+      - ./crypto-config/peerOrganizations/ges.ges.edu.gh/peers/peer0.ges.ges.edu.gh/tls:/etc/hyperledger/fabric/tls
+      - ./ledger-data/peer-ges:/var/hyperledger/production
+    ports:
+      - 7051:7051
+    restart: unless-stopped
+    networks:
+      - ges-network
+
+  peer0.gtec.ges.edu.gh:
+    image: hyperledger/fabric-peer:2.5
+    container_name: peer0.gtec.ges.edu.gh
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=ges-network_ges-network
+      - FABRIC_LOGGING_SPEC=INFO
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      - CORE_PEER_ID=peer0.gtec.ges.edu.gh
+      - CORE_PEER_ADDRESS=peer0.gtec.ges.edu.gh:9051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:9051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.gtec.ges.edu.gh:9052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:9052
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.gtec.ges.edu.gh:9051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.gtec.ges.edu.gh:9051
+      - CORE_PEER_LOCALMSPID=GTECMSP
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    volumes:
+      - /var/run/:/host/var/run/
+      - ./crypto-config/peerOrganizations/gtec.ges.edu.gh/peers/peer0.gtec.ges.edu.gh/msp:/etc/hyperledger/fabric/msp
+      - ./crypto-config/peerOrganizations/gtec.ges.edu.gh/peers/peer0.gtec.ges.edu.gh/tls:/etc/hyperledger/fabric/tls
+      - ./ledger-data/peer-gtec:/var/hyperledger/production
+    ports:
+      - 9051:9051
+    restart: unless-stopped
+    networks:
+      - ges-network
+
+  peer0.ntc.ges.edu.gh:
+    image: hyperledger/fabric-peer:2.5
+    container_name: peer0.ntc.ges.edu.gh
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=ges-network_ges-network
+      - FABRIC_LOGGING_SPEC=INFO
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      - CORE_PEER_ID=peer0.ntc.ges.edu.gh
+      - CORE_PEER_ADDRESS=peer0.ntc.ges.edu.gh:11051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:11051
+      - CORE_PEER_CHAINCODEADDRESS=peer0.ntc.ges.edu.gh:11052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:11052
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.ntc.ges.edu.gh:11051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.ntc.ges.edu.gh:11051
+      - CORE_PEER_LOCALMSPID=NTCMSP
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    volumes:
+      - /var/run/:/host/var/run/
+      - ./crypto-config/peerOrganizations/ntc.ges.edu.gh/peers/peer0.ntc.ges.edu.gh/msp:/etc/hyperledger/fabric/msp
+      - ./crypto-config/peerOrganizations/ntc.ges.edu.gh/peers/peer0.ntc.ges.edu.gh/tls:/etc/hyperledger/fabric/tls
+      - ./ledger-data/peer-ntc:/var/hyperledger/production
+    ports:
+      - 11051:11051
+    restart: unless-stopped
+    networks:
+      - ges-network
+
+  ges-verify-chaincode:
+    image: ges-verify:1.0
+    container_name: ges-verify-chaincode
+    # CHAINCODE_ID is written to chaincode.env by deploy-chaincode.sh on each install.
+    # Do not hardcode it here — it changes on every install.
+    # Add chaincode.env to .gitignore.
+    env_file: chaincode.env
+    environment:
+      # fabric-shim (Node.js) reads CHAINCODE_SERVER_ADDRESS.
+      # If your chaincode is Go and uses a different var, adjust here.
+      - CHAINCODE_ADDRESS=0.0.0.0:9999
+    ports:
+      - 9999:9999
+    restart: unless-stopped
+    depends_on:
+      - peer0.ges.ges.edu.gh
+      - peer0.gtec.ges.edu.gh
+      - peer0.ntc.ges.edu.gh
+    networks:
+      - ges-network

@@ -1,0 +1,171 @@
+Organizations:
+  - &Orderer
+    Name: OrdererMSP
+    ID: OrdererMSP
+    MSPDir: crypto-config/ordererOrganizations/ges.edu.gh/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('OrdererMSP.member')"
+      Writers:
+        Type: Signature
+        Rule: "OR('OrdererMSP.member')"
+      Admins:
+        Type: Signature
+        Rule: "OR('OrdererMSP.admin')"
+
+  - &GES
+    Name: GESMSP
+    ID: GESMSP
+    MSPDir: crypto-config/peerOrganizations/ges.ges.edu.gh/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('GESMSP.admin', 'GESMSP.peer', 'GESMSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('GESMSP.admin', 'GESMSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('GESMSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('GESMSP.peer')"
+    AnchorPeers:
+      - Host: peer0.ges.ges.edu.gh
+        Port: 7051
+
+  - &GTEC
+    Name: GTECMSP
+    ID: GTECMSP
+    MSPDir: crypto-config/peerOrganizations/gtec.ges.edu.gh/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('GTECMSP.admin', 'GTECMSP.peer', 'GTECMSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('GTECMSP.admin', 'GTECMSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('GTECMSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('GTECMSP.peer')"
+    AnchorPeers:
+      - Host: peer0.gtec.ges.edu.gh
+        Port: 9051
+
+  - &NTC
+    Name: NTCMSP
+    ID: NTCMSP
+    MSPDir: crypto-config/peerOrganizations/ntc.ges.edu.gh/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('NTCMSP.admin', 'NTCMSP.peer', 'NTCMSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('NTCMSP.admin', 'NTCMSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('NTCMSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('NTCMSP.peer')"
+    AnchorPeers:
+      - Host: peer0.ntc.ges.edu.gh
+        Port: 11051
+
+Capabilities:
+  Channel: &ChannelCapabilities
+    V2_0: true
+  Orderer: &OrdererCapabilities
+    V2_0: true
+  Application: &ApplicationCapabilities
+    V2_0: true
+
+Application: &ApplicationDefaults
+  Organizations:
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+    LifecycleEndorsement:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Endorsement"
+    Endorsement:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Endorsement"
+  Capabilities:
+    <<: *ApplicationCapabilities
+
+Orderer: &OrdererDefaults
+  OrdererType: solo
+  Addresses:
+    - orderer.ges.edu.gh:7050
+  BatchTimeout: 2s
+  BatchSize:
+    MaxMessageCount: 10
+    AbsoluteMaxBytes: 99 MB
+    PreferredMaxBytes: 512 KB
+  Organizations:
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+    BlockValidation:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+  Capabilities:
+    <<: *OrdererCapabilities
+
+Channel: &ChannelDefaults
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+  Capabilities:
+    <<: *ChannelCapabilities
+
+Profiles:
+  GESOrdererGenesis:
+    <<: *ChannelDefaults
+    Orderer:
+      <<: *OrdererDefaults
+      Organizations:
+        - *Orderer
+    Consortiums:
+      GESConsortium:
+        Organizations:
+          - *GES
+          - *GTEC
+          - *NTC
+
+  GESChannel:
+    Consortium: GESConsortium
+    <<: *ChannelDefaults
+    Application:
+      <<: *ApplicationDefaults
+      Organizations:
+        - *GES
+        - *GTEC
+        - *NTC

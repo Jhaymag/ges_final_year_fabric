@@ -1,0 +1,30 @@
+OrdererOrgs:
+  - Name: Orderer
+    Domain: ges.edu.gh
+    Specs:
+      - Hostname: orderer
+
+PeerOrgs:
+  - Name: GES
+    Domain: ges.ges.edu.gh
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+    Users:
+      Count: 1
+
+  - Name: GTEC
+    Domain: gtec.ges.edu.gh
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+    Users:
+      Count: 1
+
+  - Name: NTC
+    Domain: ntc.ges.edu.gh
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+    Users:
+      Count: 1
