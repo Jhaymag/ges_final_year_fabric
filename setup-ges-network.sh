@@ -1,6 +1,11 @@
 #!/bin/bash
 set -e
 
+# Pin the Compose project name so the generated Docker network is always
+# "ges-network_ges-network" regardless of what this folder is named/cloned as
+# (the deploy/setup scripts hardcode that network name for --network flags).
+export COMPOSE_PROJECT_NAME=ges-network
+
 # ── WSL guard: abort if script has Windows CRLF line endings ──────────────
 if file "$0" | grep -q CRLF; then
   echo "ERROR: This script has Windows (CRLF) line endings."
@@ -85,6 +90,31 @@ peer channel join -b geschannel.block
 
 echo "==> Verifying channel..."
 peer channel list
+
+echo "==> Updating anchor peers (required for cross-org service discovery)..."
+export CORE_PEER_LOCALMSPID="GESMSP"
+export CORE_PEER_ADDRESS=peer0.ges.ges.edu.gh:7051
+export CORE_PEER_TLS_ROOTCERT_FILE=$HOME/fabric/ges-network/crypto-config/peerOrganizations/ges.ges.edu.gh/peers/peer0.ges.ges.edu.gh/tls/ca.crt
+export CORE_PEER_MSPCONFIGPATH=$HOME/fabric/ges-network/crypto-config/peerOrganizations/ges.ges.edu.gh/users/Admin@ges.ges.edu.gh/msp
+peer channel update -o orderer.ges.edu.gh:7050 -c geschannel \
+    -f ./channel-artifacts/GESMSPanchors.tx --tls --cafile $ORDERER_CA \
+    --ordererTLSHostnameOverride orderer.ges.edu.gh
+
+export CORE_PEER_LOCALMSPID="GTECMSP"
+export CORE_PEER_ADDRESS=peer0.gtec.ges.edu.gh:9051
+export CORE_PEER_TLS_ROOTCERT_FILE=$HOME/fabric/ges-network/crypto-config/peerOrganizations/gtec.ges.edu.gh/peers/peer0.gtec.ges.edu.gh/tls/ca.crt
+export CORE_PEER_MSPCONFIGPATH=$HOME/fabric/ges-network/crypto-config/peerOrganizations/gtec.ges.edu.gh/users/Admin@gtec.ges.edu.gh/msp
+peer channel update -o orderer.ges.edu.gh:7050 -c geschannel \
+    -f ./channel-artifacts/GTECMSPanchors.tx --tls --cafile $ORDERER_CA \
+    --ordererTLSHostnameOverride orderer.ges.edu.gh
+
+export CORE_PEER_LOCALMSPID="NTCMSP"
+export CORE_PEER_ADDRESS=peer0.ntc.ges.edu.gh:11051
+export CORE_PEER_TLS_ROOTCERT_FILE=$HOME/fabric/ges-network/crypto-config/peerOrganizations/ntc.ges.edu.gh/peers/peer0.ntc.ges.edu.gh/tls/ca.crt
+export CORE_PEER_MSPCONFIGPATH=$HOME/fabric/ges-network/crypto-config/peerOrganizations/ntc.ges.edu.gh/users/Admin@ntc.ges.edu.gh/msp
+peer channel update -o orderer.ges.edu.gh:7050 -c geschannel \
+    -f ./channel-artifacts/NTCMSPanchors.tx --tls --cafile $ORDERER_CA \
+    --ordererTLSHostnameOverride orderer.ges.edu.gh
 
 echo "==> Deploying chaincode..."
 ./deploy-chaincode.sh

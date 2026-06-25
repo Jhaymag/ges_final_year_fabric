@@ -64,6 +64,27 @@ type LicenseVerificationResult struct {
 	Message            string `json:"message"`
 }
 
+// DocumentRecord on public ledger — the immutable anchor for a teacher's
+// uploaded document hash. Written automatically by GES the moment a teacher
+// uploads a document, before OCR runs. There is no separate "reference" to
+// anchor first — the hash itself, once written, is the tamper-proof record.
+type DocumentRecord struct {
+	DocumentHash string `json:"documentHash"`
+	StaffID      string `json:"staffId"`
+	FileName     string `json:"fileName"`
+	AnchoredBy   string `json:"anchoredBy"`
+	Timestamp    string `json:"timestamp"`
+}
+
+// DocumentVerificationResult returned by VerifyDocumentHash.
+type DocumentVerificationResult struct {
+	DocumentHash string `json:"documentHash"`
+	Result       string `json:"result"` // 'match' | 'not_found'
+	StaffID      string `json:"staffId"`
+	Timestamp    string `json:"timestamp"`
+	Message      string `json:"message"`
+}
+
 // PromotionRecord on public ledger — written by GES
 type PromotionRecord struct {
 	PromotionID   string `json:"promotionId"`
@@ -459,6 +480,98 @@ func (s *SmartContract) RevokeLicense(
 	}
 
 	return ctx.GetStub().PutPrivateData(pdcNTC, certId, recordBytes)
+}
+
+// ──────────────────────────────────────────────
+// Document hash anchoring (public ledger)
+// ──────────────────────────────────────────────
+
+// AnchorDocumentHash records a teacher's uploaded document hash on the public
+// ledger. Called automatically by GES the instant a teacher uploads a
+// document — this IS the verification event, not a check against some
+// pre-existing reference. Idempotent: re-anchoring the exact same hash for
+// the same staff (e.g. re-upload) succeeds without error.
+func (s *SmartContract) AnchorDocumentHash(
+	ctx contractapi.TransactionContextInterface,
+	documentHash string,
+	staffId string,
+	fileName string,
+) error {
+	existing, err := ctx.GetStub().GetState(documentHash)
+	if err != nil {
+		return fmt.Errorf("failed to read from ledger: %v", err)
+	}
+	if existing != nil {
+		var existingRecord DocumentRecord
+		if err := json.Unmarshal(existing, &existingRecord); err == nil && existingRecord.StaffID == staffId {
+			return nil // already anchored for this teacher — nothing to do
+		}
+	}
+
+	mspID, err := ctx.GetClientIdentity().GetMSPID()
+	if err != nil {
+		return fmt.Errorf("failed to get MSP ID: %v", err)
+	}
+
+	record := DocumentRecord{
+		DocumentHash: documentHash,
+		StaffID:      staffId,
+		FileName:     fileName,
+		AnchoredBy:   mspID,
+		Timestamp:    time.Now().UTC().Format(time.RFC3339),
+	}
+
+	recordBytes, err := json.Marshal(record)
+	if err != nil {
+		return fmt.Errorf("failed to marshal record: %v", err)
+	}
+
+	return ctx.GetStub().PutState(documentHash, recordBytes)
+}
+
+// VerifyDocumentHash checks whether a document hash is anchored on the
+// ledger and, if so, whether it belongs to the given staff ID — used to
+// detect tampering (a re-hashed, altered document will simply not be found).
+func (s *SmartContract) VerifyDocumentHash(
+	ctx contractapi.TransactionContextInterface,
+	documentHash string,
+	staffId string,
+) (*DocumentVerificationResult, error) {
+	recordBytes, err := ctx.GetStub().GetState(documentHash)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read from ledger: %v", err)
+	}
+
+	if recordBytes == nil {
+		return &DocumentVerificationResult{
+			DocumentHash: documentHash,
+			Result:       "not_found",
+			Message:      "This document hash is not anchored on the blockchain",
+		}, nil
+	}
+
+	var record DocumentRecord
+	if err := json.Unmarshal(recordBytes, &record); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal record: %v", err)
+	}
+
+	if record.StaffID != staffId {
+		return &DocumentVerificationResult{
+			DocumentHash: documentHash,
+			Result:       "not_found",
+			StaffID:      record.StaffID,
+			Timestamp:    record.Timestamp,
+			Message:      "This document hash is anchored, but not for this staff ID",
+		}, nil
+	}
+
+	return &DocumentVerificationResult{
+		DocumentHash: documentHash,
+		Result:       "match",
+		StaffID:      record.StaffID,
+		Timestamp:    record.Timestamp,
+		Message:      "Document hash matches the anchored blockchain record — authentic and untampered",
+	}, nil
 }
 
 // ──────────────────────────────────────────────

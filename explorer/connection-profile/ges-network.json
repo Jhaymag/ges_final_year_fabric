@@ -1,0 +1,70 @@
+{
+  "name": "ges-network",
+  "version": "1.0.0",
+  "license": "Apache-2.0",
+  "client": {
+    "tlsEnable": true,
+    "adminCredential": {
+      "id": "exploreradmin",
+      "password": "exploreradminpw"
+    },
+    "enableAuthentication": false,
+    "organization": "GESMSP",
+    "connection": {
+      "timeout": {
+        "peer": { "endorser": "300" },
+        "orderer": "300"
+      }
+    }
+  },
+  "channels": {
+    "geschannel": {
+      "peers": {
+        "peer0.ges.ges.edu.gh": {},
+        "peer0.gtec.ges.edu.gh": {},
+        "peer0.ntc.ges.edu.gh": {}
+      }
+    }
+  },
+  "organizations": {
+    "GESMSP": {
+      "mspid": "GESMSP",
+      "adminPrivateKey": {
+        "path": "/tmp/crypto/peerOrganizations/ges.ges.edu.gh/users/Admin@ges.ges.edu.gh/msp/keystore/priv_sk"
+      },
+      "peers": ["peer0.ges.ges.edu.gh"],
+      "signedCert": {
+        "path": "/tmp/crypto/peerOrganizations/ges.ges.edu.gh/users/Admin@ges.ges.edu.gh/msp/signcerts/Admin@ges.ges.edu.gh-cert.pem"
+      }
+    }
+  },
+  "peers": {
+    "peer0.ges.ges.edu.gh": {
+      "tlsCACerts": {
+        "path": "/tmp/crypto/peerOrganizations/ges.ges.edu.gh/peers/peer0.ges.ges.edu.gh/tls/ca.crt"
+      },
+      "url": "grpcs://peer0.ges.ges.edu.gh:7051",
+      "grpcOptions": {
+        "ssl-target-name-override": "peer0.ges.ges.edu.gh"
+      }
+    },
+    "peer0.gtec.ges.edu.gh": {
+      "tlsCACerts": {
+        "path": "/tmp/crypto/peerOrganizations/gtec.ges.edu.gh/peers/peer0.gtec.ges.edu.gh/tls/ca.crt"
+      },
+      "url": "grpcs://peer0.gtec.ges.edu.gh:9051",
+      "grpcOptions": {
+        "ssl-target-name-override": "peer0.gtec.ges.edu.gh"
+      }
+    },
+    "peer0.ntc.ges.edu.gh": {
+      "tlsCACerts": {
+        "path": "/tmp/crypto/peerOrganizations/ntc.ges.edu.gh/peers/peer0.ntc.ges.edu.gh/tls/ca.crt"
+      },
+      "url": "grpcs://peer0.ntc.ges.edu.gh:11051",
+      "grpcOptions": {
+        "ssl-target-name-override": "peer0.ntc.ges.edu.gh"
+      }
+    }
+  }
+}

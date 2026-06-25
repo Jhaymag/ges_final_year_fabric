@@ -1,0 +1,13 @@
+FROM hyperledger/fabric-tools:2.5
+
+WORKDIR /network
+
+# Copy all network config files
+COPY configtx.yaml .
+COPY crypto-config.yaml .
+
+# Entry point: generate crypto + channel artifacts, then join channel
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
+
+ENTRYPOINT ["/docker-entrypoint.sh"]

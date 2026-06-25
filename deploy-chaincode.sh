@@ -8,6 +8,10 @@
 
 set -e
 
+# Pin the Compose project name so the generated Docker network is always
+# "ges-network_ges-network" regardless of what this folder is named/cloned as.
+export COMPOSE_PROJECT_NAME=ges-network
+
 # ── WSL guard: abort if script has Windows CRLF line endings ──────────────
 if file "$0" | grep -q CRLF; then
   echo "ERROR: This script has Windows (CRLF) line endings."
@@ -30,8 +34,8 @@ NETWORK_DIR=/home/jhay/fabric/ges-network
 CHAINCODE_DIR=/home/jhay/fabric/ges-network/chaincode/ges-verify
 CHANNEL_NAME=geschannel
 CC_NAME=ges-verify
-CC_VERSION=1.3          # bump on each redeploy
-CC_SEQUENCE=4           # bump on each redeploy
+CC_VERSION=1.1          # bump on each redeploy
+CC_SEQUENCE=2           # bump on each redeploy
 CC_LABEL=${CC_NAME}_${CC_VERSION}
 CRYPTO=$NETWORK_DIR/crypto-config
 

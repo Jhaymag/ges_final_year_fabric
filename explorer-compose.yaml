@@ -1,0 +1,53 @@
+services:
+  explorerdb:
+    image: hyperledger/explorer-db:latest
+    container_name: explorerdb
+    environment:
+      - DATABASE_DATABASE=fabricexplorer
+      - DATABASE_USERNAME=hppoc
+      - DATABASE_PASSWORD=password
+    volumes:
+      - explorerdb_data:/var/lib/postgresql/data
+    networks:
+      - fabric_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hppoc -d fabricexplorer"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  explorer:
+    image: hyperledger/explorer:latest
+    container_name: blockchain-explorer
+    environment:
+      - DATABASE_HOST=explorerdb
+      - DATABASE_DATABASE=fabricexplorer
+      - DATABASE_USERNAME=hppoc
+      - DATABASE_PASSWD=password
+      - LOG_LEVEL_APP=info
+      - LOG_LEVEL_DB=info
+      - LOG_LEVEL_CONSOLE=info
+      - DISCOVERY_AS_LOCALHOST=false
+    volumes:
+      - ./explorer/config.json:/opt/explorer/app/platform/fabric/config.json
+      - ./explorer/connection-profile:/opt/explorer/app/platform/fabric/connection-profile
+      - ./crypto-config:/tmp/crypto:ro
+    ports:
+      - "8090:8080"
+    depends_on:
+      explorerdb:
+        condition: service_healthy
+    networks:
+      - fabric_network
+
+networks:
+  fabric_network:
+    external: true
+    # Must match the network the GES Fabric containers are actually running on —
+    # run `docker network ls | grep ges-network` to confirm. Setup scripts pin
+    # COMPOSE_PROJECT_NAME=ges-network, which produces "ges-network_ges-network";
+    # a network bootstrapped any other way may be named differently.
+    name: ges_final_year_fabric_ges-network
+
+volumes:
+  explorerdb_data:
