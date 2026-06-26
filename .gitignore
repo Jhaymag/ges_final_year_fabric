@@ -5,6 +5,11 @@ crypto-config/
 channel-artifacts/
 geschannel.block
 
+# ── Private keys (never commit these) ────────────────────────────────────
+*_sk
+priv_sk
+*.key
+
 # ── Chaincode runtime files ───────────────────────────────────────────────
 # chaincode.env is written by deploy-chaincode.sh on each install.
 # The CHAINCODE_ID inside it changes every time — do not commit.
@@ -16,11 +21,6 @@ chaincode/ges-verify/ges-verify
 
 # ── Ledger data (Docker volumes) ──────────────────────────────────────────
 ledger-data/
-
-# ── Private keys (never commit these) ────────────────────────────────────
-*_sk
-priv_sk
-*.key
 
 # ── OS / editor junk ──────────────────────────────────────────────────────
 .DS_Store
