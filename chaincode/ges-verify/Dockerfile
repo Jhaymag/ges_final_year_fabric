@@ -2,6 +2,8 @@
 FROM golang:1.22.3-alpine AS build
 WORKDIR /chaincode
 
+ENV GOTOOLCHAIN=local
+
 # 2. Copy only dependency files first to maximize layer caching
 COPY go.mod ./
 # Uncomment the line below if you have a go.sum file
@@ -13,7 +15,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 
 # 4. Copy the rest of your source code (only invalidates layers below this)
 COPY . .
-
+ENV GOTOOLCHAIN=local
 # 5. Build using both compiler and module caches
 RUN --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=/go/pkg/mod \
