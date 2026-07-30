@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+CHAINCODE_DIR=~/fabric/ges-network/chaincode/ges-verify
+
 # ── WSL guard: abort if script has Windows CRLF line endings ──────────────
 if file "$0" | grep -q CRLF; then
   echo "ERROR: This script has Windows (CRLF) line endings."
@@ -47,6 +49,19 @@ configtxgen -profile GESChannel \
 configtxgen -profile GESChannel \
     -outputAnchorPeersUpdate ./channel-artifacts/NTCMSPanchors.tx \
     -channelID geschannel -asOrg NTCMSP
+
+echo "Building CCaaS..."
+cd $CHAINCODE_DIR
+go mod tidy
+docker build --no-cache -t ges-verify:1.0 $CHAINCODE_DIR
+
+echo "Adding address to /etc/hosts"
+sudo tee -a /etc/hosts <<'EOF'
+127.0.0.1 peer0.ges.ges.edu.gh
+127.0.0.1 peer0.gtec.ges.edu.gh
+127.0.0.1 peer0.ntc.ges.edu.gh
+127.0.0.1 orderer.ges.edu.gh
+EOF
 
 echo "==> Starting Docker containers..."
 docker compose up -d
