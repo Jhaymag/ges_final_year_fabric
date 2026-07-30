@@ -53,7 +53,7 @@ configtxgen -profile GESChannel \
 echo "Building CCaaS..."
 cd $CHAINCODE_DIR
 go mod tidy
-DOCKER_BUILDKIT=1 docker build -t ges-verify:1.0 $CHAINCODE_DIR
+DOCKER_BUILDKIT=1 docker build --pull=false -t ges-verify:1.0 $CHAINCODE_DIR
 
 echo "Adding address to /etc/hosts"
 sudo tee -a /etc/hosts <<'EOF'
