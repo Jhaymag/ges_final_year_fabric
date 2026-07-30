@@ -1,7 +1,10 @@
 FROM golang:1.22-alpine AS build
 WORKDIR /chaincode
 COPY . .
-RUN go build -o ges-verify .
+# Add cache mounts for the Go toolchain and module caches
+RUN --mount=type=cache,target=/root/.cache/go-build \
+    --mount=type=cache,target=/go/pkg/mod \
+    go build -o ges-verify .
 
 FROM alpine:3.18
 WORKDIR /chaincode
