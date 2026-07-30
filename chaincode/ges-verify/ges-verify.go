@@ -1260,3 +1260,4 @@ func main() {
 		fmt.Printf("Error starting chaincode server: %v\n", err)
 	}
 }
+// new chaincode
