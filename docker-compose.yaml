@@ -3,7 +3,7 @@ networks:
 
 services:
   orderer.ges.edu.gh:
-    image: hyperledger/fabric-orderer:2.5
+    image: hyperledger/fabric-orderer:2.5.16
     environment:
       - FABRIC_LOGGING_SPEC=INFO
       - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
@@ -30,7 +30,7 @@ services:
       - ges-network
 
   peer0.ges.ges.edu.gh:
-    image: hyperledger/fabric-peer:2.5
+    image: hyperledger/fabric-peer:2.5.16
     container_name: peer0.ges.ges.edu.gh
     # host.docker.internal:host-gateway resolves the WSL2 host IP dynamically.
     # This replaces the hardcoded 172.29.192.1 which changes on every WSL restart.
@@ -70,7 +70,7 @@ services:
       - ges-network
 
   peer0.gtec.ges.edu.gh:
-    image: hyperledger/fabric-peer:2.5
+    image: hyperledger/fabric-peer:2.5.16
     container_name: peer0.gtec.ges.edu.gh
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -108,7 +108,7 @@ services:
       - ges-network
 
   peer0.ntc.ges.edu.gh:
-    image: hyperledger/fabric-peer:2.5
+    image: hyperledger/fabric-peer:2.5.16
     container_name: peer0.ntc.ges.edu.gh
     extra_hosts:
       - "host.docker.internal:host-gateway"
