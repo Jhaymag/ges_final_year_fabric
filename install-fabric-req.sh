@@ -14,6 +14,7 @@ GO_VERSION="1.21.13"   # minimum recommended for Fabric 2.5
 
 # ── Resolve script location ───────────────────────────────────────────────
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+FABRIC_BIN="$SCRIPT_DIR/fabric-samples/bin"
 
 echo "======================================================"
 echo " GES Network Prerequisites + Fabric Installer"
@@ -29,7 +30,7 @@ else
   ARCH=$(dpkg --print-architecture)  # amd64 or arm64
 
   sudo apt-get install -y aria2
-  aria2c -x 4 -s 4 -k 1M --check-certificate=true -o go1.21.13.linux-amd64.tar.gz https://go.dev/dl/go${GO_VERSION}.linux-${ARCH}.tar.gz
+  aria2c -x 4 -s 4 -k 1M --check-certificate=true -o go${GO_VERSION}.linux-${ARCH}.tar.gz https://go.dev/dl/go${GO_VERSION}.linux-${ARCH}.tar.gz
   sudo rm -rf /usr/local/go
   sudo tar -C /usr/local -xzf go${GO_VERSION}.linux-${ARCH}.tar.gz
   rm go${GO_VERSION}.linux-${ARCH}.tar.gz
@@ -67,17 +68,22 @@ else
 fi
 
 # ── 4. Install Fabric binaries + Docker images ────────────────────────────
-echo ""
-echo "==> Downloading Fabric install script..."
-curl -sSLO https://raw.githubusercontent.com/hyperledger/fabric/main/scripts/install-fabric.sh
-chmod +x install-fabric.sh
+if [ -x "$FABRIC_BIN/peer" ]; then
+  echo "✓ Fabric binaries already installed at $FABRIC_BIN"
+else
+  echo ""
+  echo "==> Downloading Fabric install script..."
+  curl -sSLO https://raw.githubusercontent.com/hyperledger/fabric/main/scripts/install-fabric.sh
+  chmod +x install-fabric.sh
 
-echo "==> Installing Fabric ${FABRIC_VERSION} binaries and Docker images..."
-./install-fabric.sh --fabric-version $FABRIC_VERSION --ca-version $CA_VERSION docker binary
+  echo "==> Installing Fabric ${FABRIC_VERSION} binaries and Docker images..."
+  ./install-fabric.sh --fabric-version "$FABRIC_VERSION" --ca-version "$CA_VERSION" docker binary
+  rm -f install-fabric.sh
+
+  echo "✓ Fabric ${FABRIC_VERSION} binaries and Docker images installed"
+fi
 
 # ── 5. Add Fabric binaries to PATH ───────────────────────────────────────
-FABRIC_BIN="$SCRIPT_DIR/fabric-samples/bin"
-
 export PATH=$PATH:$FABRIC_BIN
 
 if ! grep -q 'fabric-samples/bin' ~/.bashrc; then
@@ -90,7 +96,7 @@ echo " ✅ All prerequisites installed!"
 echo "======================================================"
 echo ""
 echo "  Go       : $(go version)"
-echo "  peer     : $(peer version 2>/dev/null | head -1 || echo 'in PATH after reload')"
+echo "  peer     : $("$FABRIC_BIN/peer" version 2>/dev/null | head -1 || echo 'in PATH after reload')"
 echo "  Docker   : $(docker --version)"
 echo ""
 echo "⚠️  PATH was updated. Run this to apply in your current terminal:"
