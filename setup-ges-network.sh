@@ -2,6 +2,7 @@
 set -e
 
 CHAINCODE_DIR=~/fabric/ges-network/chaincode/ges-verify
+NETWORK_DIR=~/fabric/ges-network
 
 # ── WSL guard: abort if script has Windows CRLF line endings ──────────────
 if file "$0" | grep -q CRLF; then
@@ -54,6 +55,8 @@ echo "Building CCaaS..."
 cd $CHAINCODE_DIR
 go mod tidy
 DOCKER_BUILDKIT=1 docker build --pull=false -t ges-verify:1.0 $CHAINCODE_DIR
+
+cd $NETWORK_DIR
 
 echo "Adding address to /etc/hosts"
 sudo tee -a /etc/hosts <<'EOF'
