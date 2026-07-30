@@ -77,20 +77,12 @@ wait_for_port() {
   echo "✓ $host:$port is ready"
 }
 
-# ─────────────────────────────────────────────────────────────────────────
-# Step 1: Build chaincode binary + Docker image
-# ─────────────────────────────────────────────────────────────────────────
-echo "===> Step 1: Build chaincode Docker image"
-cd $CHAINCODE_DIR
-go mod tidy
-docker build --no-cache -t ges-verify:1.0 $CHAINCODE_DIR
-echo "✓ Docker image built"
 
 # ─────────────────────────────────────────────────────────────────────────
-# Step 2: Package as CCaaS
+# Step 1: Package as CCaaS
 # ─────────────────────────────────────────────────────────────────────────
 echo ""
-echo "===> Step 2: Package chaincode as CCaaS"
+echo "===> Step 1: Package chaincode as CCaaS"
 cd $NETWORK_DIR
 
 cat > metadata.json <<EOF
@@ -107,10 +99,10 @@ rm -f metadata.json connection.json code.tar.gz
 echo "✓ Package created: ${CC_NAME}.tar.gz"
 
 # ─────────────────────────────────────────────────────────────────────────
-# Step 3: Install on GTEC peer
+# Step 2: Install on GTEC peer
 # ─────────────────────────────────────────────────────────────────────────
 echo ""
-echo "===> Step 3: Install on GTEC peer"
+echo "===> Step 2: Install on GTEC peer"
 export CORE_PEER_TLS_ENABLED=true
 export CORE_PEER_LOCALMSPID=GTECMSP
 export CORE_PEER_TLS_ROOTCERT_FILE=$GTEC_TLS
@@ -121,10 +113,10 @@ peer lifecycle chaincode install ${CC_NAME}.tar.gz
 echo "✓ Installed on GTEC peer"
 
 # ─────────────────────────────────────────────────────────────────────────
-# Step 4: Extract package ID, write chaincode.env, restart CCaaS
+# Step 3: Extract package ID, write chaincode.env, restart CCaaS
 # ─────────────────────────────────────────────────────────────────────────
 echo ""
-echo "===> Step 4: Extract package ID and restart CCaaS container"
+echo "===> Step 3: Extract package ID and restart CCaaS container"
 export CC_PACKAGE_ID=$(get_package_id)
 
 if [ -z "$CC_PACKAGE_ID" ]; then
@@ -145,10 +137,10 @@ docker compose -f $NETWORK_DIR/docker-compose.yaml up -d --no-deps ges-verify-ch
 wait_for_port localhost 9999
 
 # ─────────────────────────────────────────────────────────────────────────
-# Step 5: Approve for GTEC
+# Step 4: Approve for GTEC
 # ─────────────────────────────────────────────────────────────────────────
 echo ""
-echo "===> Step 5: Approve for GTEC"
+echo "===> Step 4: Approve for GTEC"
 peer lifecycle chaincode approveformyorg \
   -o $ORDERER_ADDRESS \
   --ordererTLSHostnameOverride $ORDERER_HOST_ALIAS \
@@ -162,10 +154,10 @@ peer lifecycle chaincode approveformyorg \
 echo "✓ GTEC approved"
 
 # ─────────────────────────────────────────────────────────────────────────
-# Step 6: Install on NTC peer
+# Step 5: Install on NTC peer
 # ─────────────────────────────────────────────────────────────────────────
 echo ""
-echo "===> Step 6: Install on NTC peer"
+echo "===> Step 5: Install on NTC peer"
 export CORE_PEER_LOCALMSPID=NTCMSP
 export CORE_PEER_TLS_ROOTCERT_FILE=$NTC_TLS
 export CORE_PEER_MSPCONFIGPATH=$NTC_MSP
@@ -175,10 +167,10 @@ peer lifecycle chaincode install ${CC_NAME}.tar.gz
 echo "✓ Installed on NTC peer"
 
 # ─────────────────────────────────────────────────────────────────────────
-# Step 7: Approve for NTC
+# Step 6: Approve for NTC
 # ─────────────────────────────────────────────────────────────────────────
 echo ""
-echo "===> Step 7: Approve for NTC"
+echo "===> Step 6: Approve for NTC"
 # CC_PACKAGE_ID is already set — same .tar.gz produces the same hash.
 peer lifecycle chaincode approveformyorg \
   -o $ORDERER_ADDRESS \
@@ -193,10 +185,10 @@ peer lifecycle chaincode approveformyorg \
 echo "✓ NTC approved"
 
 # ─────────────────────────────────────────────────────────────────────────
-# Step 8: Install on GES peer
+# Step 7: Install on GES peer
 # ─────────────────────────────────────────────────────────────────────────
 echo ""
-echo "===> Step 8: Install on GES peer"
+echo "===> Step 7: Install on GES peer"
 export CORE_PEER_LOCALMSPID=GESMSP
 export CORE_PEER_TLS_ROOTCERT_FILE=$GES_TLS
 export CORE_PEER_MSPCONFIGPATH=$GES_MSP
@@ -206,10 +198,10 @@ peer lifecycle chaincode install ${CC_NAME}.tar.gz
 echo "✓ Installed on GES peer"
 
 # ─────────────────────────────────────────────────────────────────────────
-# Step 9: Approve for GES
+# Step 8: Approve for GES
 # ─────────────────────────────────────────────────────────────────────────
 echo ""
-echo "===> Step 9: Approve for GES"
+echo "===> Step 8: Approve for GES"
 peer lifecycle chaincode approveformyorg \
   -o $ORDERER_ADDRESS \
   --ordererTLSHostnameOverride $ORDERER_HOST_ALIAS \
@@ -223,10 +215,10 @@ peer lifecycle chaincode approveformyorg \
 echo "✓ GES approved"
 
 # ─────────────────────────────────────────────────────────────────────────
-# Step 10: Check commit readiness
+# Step 9: Check commit readiness
 # ─────────────────────────────────────────────────────────────────────────
 echo ""
-echo "===> Step 10: Check commit readiness"
+echo "===> Step 9: Check commit readiness"
 peer lifecycle chaincode checkcommitreadiness \
   --channelID $CHANNEL_NAME \
   --name $CC_NAME \
@@ -241,10 +233,10 @@ echo "Press Enter to continue or Ctrl+C to abort..."
 read
 
 # ─────────────────────────────────────────────────────────────────────────
-# Step 11: Commit
+# Step 10: Commit
 # ─────────────────────────────────────────────────────────────────────────
 echo ""
-echo "===> Step 11: Commit to geschannel"
+echo "===> Step 10: Commit to geschannel"
 peer lifecycle chaincode commit \
   -o $ORDERER_ADDRESS \
   --ordererTLSHostnameOverride $ORDERER_HOST_ALIAS \
@@ -263,10 +255,10 @@ peer lifecycle chaincode commit \
 echo "✓ Chaincode committed to geschannel"
 
 # ─────────────────────────────────────────────────────────────────────────
-# Step 12: Verify
+# Step 11: Verify
 # ─────────────────────────────────────────────────────────────────────────
 echo ""
-echo "===> Step 12: Verify deployment"
+echo "===> Step 11: Verify deployment"
 peer lifecycle chaincode querycommitted \
   --channelID $CHANNEL_NAME \
   --name $CC_NAME \
