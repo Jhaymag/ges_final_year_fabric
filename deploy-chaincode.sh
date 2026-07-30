@@ -30,8 +30,8 @@ NETWORK_DIR=/home/jhay/fabric/ges-network
 CHAINCODE_DIR=/home/jhay/fabric/ges-network/chaincode/ges-verify
 CHANNEL_NAME=geschannel
 CC_NAME=ges-verify
-CC_VERSION=1.3          # bump on each redeploy
-CC_SEQUENCE=4           # bump on each redeploy
+CC_VERSION=1.0          # bump on each redeploy
+CC_SEQUENCE=1           # bump on each redeploy
 CC_LABEL=${CC_NAME}_${CC_VERSION}
 CRYPTO=$NETWORK_DIR/crypto-config
 

@@ -15,6 +15,8 @@ sudo rm -rf ledger-data/
 
 echo "==> Creating ledger data directories..."
 mkdir -p ledger-data/{orderer,peer-ges,peer-gtec,peer-ntc}
+touch chaincode.env
+echo "CHAINCODE_ID=" >> chaincode.env
 
 echo "==> Generating crypto materials..."
 cryptogen generate --config=crypto-config.yaml --output=crypto-config
@@ -88,6 +90,9 @@ peer channel list
 
 echo "==> Deploying chaincode..."
 ./deploy-chaincode.sh
+
+echo "==> Uploading Mock data..."
+./upload.sh
 
 echo ""
 echo "✅ GES Network is up and running!"
