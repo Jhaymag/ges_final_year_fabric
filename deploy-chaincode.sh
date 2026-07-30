@@ -77,6 +77,10 @@ wait_for_port() {
   echo "✓ $host:$port is ready"
 }
 
+echo "Building CCaaS..."
+cd $CHAINCODE_DIR
+go mod tidy
+DOCKER_BUILDKIT=1 docker build --pull=false -t ges-verify:1.0 $CHAINCODE_DIR
 
 # ─────────────────────────────────────────────────────────────────────────
 # Step 1: Package as CCaaS
