@@ -146,7 +146,7 @@ services:
       - ges-network
 
   ges-verify-chaincode:
-    image: ges-verify:1.1
+    image: ges-verify:latest
     container_name: ges-verify-chaincode
     # CHAINCODE_ID is written to chaincode.env by deploy-chaincode.sh on each install.
     # Do not hardcode it here — it changes on every install.

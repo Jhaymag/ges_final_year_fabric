@@ -30,12 +30,12 @@ for cmd in jq peer docker go; do
 done
 
 # ── Paths ─────────────────────────────────────────────────────────────────
-NETWORK_DIR=/home/jhay/fabric/ges-network
-CHAINCODE_DIR=/home/jhay/fabric/ges-network/chaincode/ges-verify
+NETWORK_DIR=$(cd "$(dirname "$0")" && pwd)
+CHAINCODE_DIR=$NETWORK_DIR/chaincode/ges-verify
 CHANNEL_NAME=geschannel
 CC_NAME=ges-verify
-CC_VERSION=1.1          # bump on each redeploy
-CC_SEQUENCE=2           # bump on each redeploy
+CC_VERSION=1.3          # bump on each redeploy
+CC_SEQUENCE=4           # bump on each redeploy
 CC_LABEL=${CC_NAME}_${CC_VERSION}
 CRYPTO=$NETWORK_DIR/crypto-config
 
@@ -87,7 +87,7 @@ wait_for_port() {
 echo "===> Step 1: Build chaincode Docker image"
 cd $CHAINCODE_DIR
 go mod tidy
-docker build --no-cache -t ges-verify:1.0 $CHAINCODE_DIR
+docker build --no-cache -t ges-verify:latest $CHAINCODE_DIR
 echo "✓ Docker image built"
 
 # ─────────────────────────────────────────────────────────────────────────

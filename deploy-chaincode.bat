@@ -10,8 +10,8 @@ REM Pin the Compose project name so the generated Docker network is always
 REM "ges-network_ges-network" regardless of what this folder is named/cloned as.
 set COMPOSE_PROJECT_NAME=ges-network
 set CC_NAME=ges-verify
-set CC_VERSION=1.1
-set CC_SEQUENCE=2
+set CC_VERSION=1.2
+set CC_SEQUENCE=3
 set CC_LABEL=%CC_NAME%_%CC_VERSION%
 set CHANNEL=geschannel
 
