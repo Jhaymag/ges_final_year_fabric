@@ -26,8 +26,8 @@ for cmd in jq peer docker go; do
 done
 
 # ── Paths ─────────────────────────────────────────────────────────────────
-NETWORK_DIR=/home/jhay/fabric/ges-network
-CHAINCODE_DIR=/home/jhay/fabric/ges-network/chaincode/ges-verify
+NETWORK_DIR=~/fabric/ges-network
+CHAINCODE_DIR=~/fabric/ges-network/chaincode/ges-verify
 CHANNEL_NAME=geschannel
 CC_NAME=ges-verify
 CC_VERSION=1.0          # bump on each redeploy
