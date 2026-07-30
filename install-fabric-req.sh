@@ -28,7 +28,8 @@ else
   echo "==> Installing Go ${GO_VERSION}..."
   ARCH=$(dpkg --print-architecture)  # amd64 or arm64
 
-  curl -sSLO https://go.dev/dl/go${GO_VERSION}.linux-${ARCH}.tar.gz
+  sudo apt-get install -y aria2
+  aria2c -x 4 -s 4 -k 1M --check-certificate=true -o go1.21.13.linux-amd64.tar.gz https://go.dev/dl/go${GO_VERSION}.linux-${ARCH}.tar.gz
   sudo rm -rf /usr/local/go
   sudo tar -C /usr/local -xzf go${GO_VERSION}.linux-${ARCH}.tar.gz
   rm go${GO_VERSION}.linux-${ARCH}.tar.gz
@@ -73,7 +74,6 @@ chmod +x install-fabric.sh
 
 echo "==> Installing Fabric ${FABRIC_VERSION} binaries and Docker images..."
 ./install-fabric.sh --fabric-version $FABRIC_VERSION --ca-version $CA_VERSION docker binary
-rm install-fabric.sh
 
 # ── 5. Add Fabric binaries to PATH ───────────────────────────────────────
 FABRIC_BIN="$SCRIPT_DIR/fabric-samples/bin"
